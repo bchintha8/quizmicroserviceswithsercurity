@@ -14,11 +14,23 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
+    private static final String[] SWAGGER_WHITELIST = {
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
+                        // ⭐ ALLOW SWAGGER
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
 
                         // Public
                         .requestMatchers("/actuator/**").permitAll()
@@ -32,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/question/questions-by-ids").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/question/calculate-score").hasAnyRole("USER", "ADMIN")
 
-                        // Everything else must be authenticated
+                        // Everything else
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess ->
